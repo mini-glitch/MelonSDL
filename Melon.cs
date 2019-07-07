@@ -5,6 +5,9 @@ namespace Melon
 {
     public abstract class Melon
     {
+		public int WindowWidth { get; set; } = 800;
+		public int WindowHeight { get; set; } = 600;
+
 		protected abstract void Load();
 		protected abstract void Unload();
 		protected abstract void Update(float deltaTime);
@@ -13,9 +16,10 @@ namespace Melon
 		public void Run()
 		{
 			SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING);
-			IntPtr screen = SDL_gpu.GPU_Init(640, 360, 0);
+			IntPtr screen = SDL_gpu.GPU_Init((ushort)WindowWidth, (ushort)WindowHeight, 0);
 
 			Graphics.MainScreen = screen;
+			Input.Initialize();
 
 			Load();
 
@@ -31,13 +35,13 @@ namespace Melon
 				// Handle events
 				while (SDL.SDL_PollEvent(out SDL.SDL_Event ev) != 0)
 				{
-					if (ev.type == SDL.SDL_EventType.SDL_KEYDOWN && ev.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)
-					{
-						isRunning = false;
-					}
 					if (ev.type == SDL.SDL_EventType.SDL_QUIT)
 					{
 						isRunning = false;
+					}
+					else
+					{
+						Input.ProcessEvent(ev);
 					}
 				}
 
@@ -49,6 +53,7 @@ namespace Melon
 				while (timerAccumulator >= timerFixedDelta)
 				{
 					Update(timerFixedDelta);
+					Input.Update();
 					timerAccumulator -= timerFixedDelta;
 				}
 
